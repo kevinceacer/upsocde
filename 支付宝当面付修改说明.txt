@@ -1,0 +1,61 @@
+支付宝当面付整合修改说明
+========================
+
+本包是在用户上传的完整 ups.ceacer.cn_AJAWN.zip 基础上直接修改。
+
+已修改内容
+----------
+1. /admin/settings.php
+   - 应用私钥和支付宝公钥保存后显示“******** 已保存”。
+   - 不再明文回显真实密钥。
+   - 不修改密钥直接保存时，保留原值。
+   - 支持勾选清除已保存密钥。
+   - 保存时自动检查私钥、公钥格式。
+
+2. /recharge.php
+   - 点击“生成支付宝二维码”后不再跳到 JSON 页面。
+   - 当前页面直接显示真实二维码。
+   - 显示订单号、金额、10 分钟倒计时。
+   - 每 5 秒查询付款状态。
+   - 支付成功后自动增加用户余额并刷新页面。
+   - 手机端支持点击“在支付宝中打开”。
+
+3. /alipay_create.php
+   - 只作为 AJAX JSON 接口使用。
+   - 必须登录并验证 CSRF。
+   - 订单写入原系统 recharge_orders 表。
+   - 直接访问 GET 时跳回 recharge.php。
+
+4. /alipay_notify.php
+   - 使用支付宝公钥进行 RSA2 验签。
+   - 校验 App ID、订单金额和支付方式。
+   - 调用 completeRechargeOrder()，保证重复通知不会重复加余额。
+
+5. /alipay_status.php
+   - 只允许用户查询自己的充值订单。
+   - 本地订单仍未支付时，调用 alipay.trade.query 主动补查。
+
+6. /alipay.php
+   - 配置统一读取原系统 settings 表。
+   - 增强密钥格式兼容、网络错误提示和日志。
+
+7. /assets/qrcode.min.js
+   - 本地二维码组件，不依赖外部 CDN。
+
+8. 兼容旧地址
+   - alipay_pay.php 自动跳到 recharge.php。
+   - alipay_settings.php 自动跳到 admin/settings.php。
+   - alipay_store.php 不再创建独立支付宝数据表。
+
+上传方法
+--------
+1. 先备份线上网站和数据库。
+2. 将本压缩包解压后覆盖到 /www/wwwroot/ups.ceacer.cn/。
+3. 不需要删除原 users、settings、recharge_orders 等数据表。
+4. 进入 /admin/settings.php，确认 App ID 和两个密钥显示为已保存。
+5. 若密钥显示未保存，请重新填写一次并保存。
+6. 使用普通用户登录，进入 /recharge.php 测试 1 元小额支付。
+
+PHP 扩展要求
+------------
+PDO MySQL、OpenSSL、cURL、mbstring。

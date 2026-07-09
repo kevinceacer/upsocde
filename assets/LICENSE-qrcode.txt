@@ -1,0 +1,4 @@
+QRCode generator portions:
+Copyright (c) 2009 Kazuhiko Arase
+MIT License. See http://www.opensource.org/licenses/mit-license.php
+The word QR Code is a registered trademark of DENSO WAVE INCORPORATED.
